@@ -72,13 +72,6 @@ WHERE
 ![sql2_2](img/sql2_2.png)
 
 
-************
-<ins><span style="color:blue">
-SELECT CAST ( p.payment_date  AS DATE ) ddd FROM sakila.payment p; <br> 
-SQL Error [1584] [42000]: Incorrect parameters in the call to stored function `CAST` <br> 
-CAST Не работает Почему?</span></ins>
-************
-
 ---
 
 ### Задание 3
