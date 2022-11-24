@@ -113,25 +113,19 @@ ORDER BY
 
 ```sql
 SELECT
-	s.first_name,
+	s.first_name ,
 	s.last_name ,
-	tab.num,
+	COUNT(1) num,
 	CASE
-		WHEN tab.num > 8000 THEN 'YES'
+		WHEN COUNT(1) > 8000 THEN 'YES'
 		ELSE 'NO'
 	END prem
 FROM
-	(
-	SELECT
-		p.staff_id ,
-		COUNT(1) num
-	FROM
-		sakila.payment p
-	GROUP BY
-		p.staff_id) tab
-JOIN 
-sakila.staff s ON
-	s.staff_id = tab.staff_id;
+	payment p
+JOIN staff s ON
+	s.staff_id = p.staff_id
+GROUP BY
+	p.staff_id ;
 ```
 
 ![sql2_4](img/sql2_4.png)
