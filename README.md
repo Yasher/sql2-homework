@@ -85,106 +85,22 @@ CAST Не работает Почему?</span></ins>
 
 ```sql
 SELECT
-	num_pay.y 'year',
-	num_pay.m 'month',
-	max_num_rent.*
+	YEAR (p.payment_date) year,
+	MONTH (p.payment_date) month,
+	SUM(p.amount) summ_payments,
+	COUNT(1) number_rents
 FROM
-	(
-	SELECT
-		YEAR(p.payment_date) y,
-		month(p.payment_date) m,
-		COUNT(1) np
-	FROM
-		sakila.payment p
-	GROUP BY
-		y,
-		m ) num_pay
-JOIN 
-(
-	SELECT
-		COUNT(1) max_num_rent
-	FROM
-		sakila.rental r
-	WHERE
-		YEAR(r.rental_date) = (
-		SELECT
-			num_pay.y
-		FROM
-			(
-			SELECT
-				YEAR(p.payment_date) y,
-				month(p.payment_date) m,
-				COUNT(1) np
-			FROM
-				sakila.payment p
-			GROUP BY
-				y,
-				m ) num_pay
-		WHERE
-			num_pay.np = (
-			SELECT
-				MAX(num_pay.np)
-			FROM
-				(
-				SELECT
-					YEAR(p.payment_date) y,
-					month(p.payment_date) m,
-					COUNT(1) np
-				FROM
-					sakila.payment p
-				GROUP BY
-					y,
-					m ) num_pay))
-		AND 
-MONTH (r.rental_date) = (
-		SELECT
-			num_pay.m
-		FROM
-			(
-			SELECT
-				YEAR(p.payment_date) y,
-				month(p.payment_date) m,
-				COUNT(1) np
-			FROM
-				sakila.payment p
-			GROUP BY
-				y,
-				m ) num_pay
-		WHERE
-			num_pay.np = (
-			SELECT
-				MAX(num_pay.np)
-			FROM
-				(
-				SELECT
-					YEAR(p.payment_date) y,
-					month(p.payment_date) m,
-					COUNT(1) np
-				FROM
-					sakila.payment p
-				GROUP BY
-					y,
-					m ) num_pay))
-) max_num_rent
-WHERE
-	num_pay.np = (
-	SELECT
-		MAX(num_pay.np)
-	FROM
-		(
-		SELECT
-			YEAR(p.payment_date) y,
-			month(p.payment_date) m,
-			COUNT(1) np
-		FROM
-			sakila.payment p
-		GROUP BY
-			y,
-			m ) num_pay);
-
+	payment p
+JOIN rental r ON
+	p.rental_id = r.rental_id
+GROUP BY
+	year,
+	month
+ORDER BY
+	summ_payments DESC LIMIT 1;
 ```
 
-![sql2_3](img/sql2_3.png)
+![sql2_3](img/sql2_3_corr.png)
 
 ---
 ## Дополнительные задания (со звездочкой*)
