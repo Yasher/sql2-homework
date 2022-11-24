@@ -116,106 +116,31 @@ CAST Не работает Почему?</span></ins>
 
 ```sql
 SELECT
-	num_pay.y 'year',
-	num_pay.m 'month',
-	max_num_rent.*
-FROM
-	(
-	SELECT
-		YEAR(p.payment_date) y,
-		month(p.payment_date) m,
-		COUNT(1) np
-	FROM
-		sakila.payment p
-	GROUP BY
-		y,
-		m ) num_pay
+	s2.first_name ,
+	s2.last_name ,
+	c2.city ,
+	COUNT(1) number
+FROM 
+	customer c
+JOIN
+	store s ON
+	s.store_id = c.store_id
+JOIN  
+	staff s2 ON
+	s2.staff_id = s.manager_staff_id
 JOIN 
-(
-	SELECT
-		COUNT(1) max_num_rent
-	FROM
-		sakila.rental r
-	WHERE
-		YEAR(r.rental_date) = (
-		SELECT
-			num_pay.y
-		FROM
-			(
-			SELECT
-				YEAR(p.payment_date) y,
-				month(p.payment_date) m,
-				COUNT(1) np
-			FROM
-				sakila.payment p
-			GROUP BY
-				y,
-				m ) num_pay
-		WHERE
-			num_pay.np = (
-			SELECT
-				MAX(num_pay.np)
-			FROM
-				(
-				SELECT
-					YEAR(p.payment_date) y,
-					month(p.payment_date) m,
-					COUNT(1) np
-				FROM
-					sakila.payment p
-				GROUP BY
-					y,
-					m ) num_pay))
-		AND 
-MONTH (r.rental_date) = (
-		SELECT
-			num_pay.m
-		FROM
-			(
-			SELECT
-				YEAR(p.payment_date) y,
-				month(p.payment_date) m,
-				COUNT(1) np
-			FROM
-				sakila.payment p
-			GROUP BY
-				y,
-				m ) num_pay
-		WHERE
-			num_pay.np = (
-			SELECT
-				MAX(num_pay.np)
-			FROM
-				(
-				SELECT
-					YEAR(p.payment_date) y,
-					month(p.payment_date) m,
-					COUNT(1) np
-				FROM
-					sakila.payment p
-				GROUP BY
-					y,
-					m ) num_pay))
-) max_num_rent
-WHERE
-	num_pay.np = (
-	SELECT
-		MAX(num_pay.np)
-	FROM
-		(
-		SELECT
-			YEAR(p.payment_date) y,
-			month(p.payment_date) m,
-			COUNT(1) np
-		FROM
-			sakila.payment p
-		GROUP BY
-			y,
-			m ) num_pay);
+	address a ON
+	a.address_id = s.address_id
+JOIN city c2 ON
+	a.city_id = c2.city_id
+GROUP BY
+	c.store_id
+HAVING
+	number>300;
 
 ```
 
-![sql2_3](img/sql2_3.png)
+![sql2_3](img/sql2_3_corr.png)
 
 ---
 ## Дополнительные задания (со звездочкой*)
