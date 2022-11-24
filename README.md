@@ -25,62 +25,31 @@
 ### Задание 1
 
 ```sql
-SELECT
-	*
-FROM
-	(
-	SELECT
-		CONCAT(stf.first_name , " ",
-		stf.last_name) staff
-	FROM
-		sakila.staff stf
-	WHERE
-		stf.store_id = (
-		SELECT
-			cst.store_id
-		FROM
-			sakila.customer cst
-		GROUP BY
-			cst.store_id
-		HAVING
-			COUNT(1)>300)) staff
-JOIN 
-(
-	SELECT
-		c2.city
-	FROM
-		sakila.store str
-	JOIN sakila.address a ON
-		a.address_id = str.address_id
-	JOIN sakila.city c2 ON
-		a.city_id = c2.city_id
-	WHERE
-		str.store_id = (
-		SELECT
-			c.store_id
-		FROM
-			sakila.customer c
-		GROUP BY
-			store_id
-		HAVING
-			COUNT(1)>300)
-) city ON
-	1 = 1
+.SELECT
+	s2.first_name ,
+	s2.last_name ,
+	c2.city ,
+	COUNT(1) number
+FROM 
+	customer c
 JOIN
-(
-	SELECT
-		COUNT(1) customers
-	FROM
-		sakila.customer cst
-	GROUP BY
-		cst.store_id
-	HAVING
-		COUNT(1)>300
-) num_cust ON
-	1 = 1;
+	store s ON
+	s.store_id = c.store_id
+JOIN  
+	staff s2 ON
+	s2.staff_id = s.manager_staff_id
+JOIN 
+	address a ON
+	a.address_id = s.address_id
+JOIN city c2 ON
+	a.city_id = c2.city_id
+GROUP BY
+	c.store_id
+HAVING
+	number>300;
 ```
 
-![sql2_1](img/sql2_1.png)
+![sql2_1](img/sql2_1_corr.png)
 
 
 ---
@@ -116,31 +85,106 @@ CAST Не работает Почему?</span></ins>
 
 ```sql
 SELECT
-	s2.first_name ,
-	s2.last_name ,
-	c2.city ,
-	COUNT(1) number
-FROM 
-	customer c
-JOIN
-	store s ON
-	s.store_id = c.store_id
-JOIN  
-	staff s2 ON
-	s2.staff_id = s.manager_staff_id
+	num_pay.y 'year',
+	num_pay.m 'month',
+	max_num_rent.*
+FROM
+	(
+	SELECT
+		YEAR(p.payment_date) y,
+		month(p.payment_date) m,
+		COUNT(1) np
+	FROM
+		sakila.payment p
+	GROUP BY
+		y,
+		m ) num_pay
 JOIN 
-	address a ON
-	a.address_id = s.address_id
-JOIN city c2 ON
-	a.city_id = c2.city_id
-GROUP BY
-	c.store_id
-HAVING
-	number>300;
+(
+	SELECT
+		COUNT(1) max_num_rent
+	FROM
+		sakila.rental r
+	WHERE
+		YEAR(r.rental_date) = (
+		SELECT
+			num_pay.y
+		FROM
+			(
+			SELECT
+				YEAR(p.payment_date) y,
+				month(p.payment_date) m,
+				COUNT(1) np
+			FROM
+				sakila.payment p
+			GROUP BY
+				y,
+				m ) num_pay
+		WHERE
+			num_pay.np = (
+			SELECT
+				MAX(num_pay.np)
+			FROM
+				(
+				SELECT
+					YEAR(p.payment_date) y,
+					month(p.payment_date) m,
+					COUNT(1) np
+				FROM
+					sakila.payment p
+				GROUP BY
+					y,
+					m ) num_pay))
+		AND 
+MONTH (r.rental_date) = (
+		SELECT
+			num_pay.m
+		FROM
+			(
+			SELECT
+				YEAR(p.payment_date) y,
+				month(p.payment_date) m,
+				COUNT(1) np
+			FROM
+				sakila.payment p
+			GROUP BY
+				y,
+				m ) num_pay
+		WHERE
+			num_pay.np = (
+			SELECT
+				MAX(num_pay.np)
+			FROM
+				(
+				SELECT
+					YEAR(p.payment_date) y,
+					month(p.payment_date) m,
+					COUNT(1) np
+				FROM
+					sakila.payment p
+				GROUP BY
+					y,
+					m ) num_pay))
+) max_num_rent
+WHERE
+	num_pay.np = (
+	SELECT
+		MAX(num_pay.np)
+	FROM
+		(
+		SELECT
+			YEAR(p.payment_date) y,
+			month(p.payment_date) m,
+			COUNT(1) np
+		FROM
+			sakila.payment p
+		GROUP BY
+			y,
+			m ) num_pay);
 
 ```
 
-![sql2_3](img/sql2_3_corr.png)
+![sql2_3](img/sql2_3.png)
 
 ---
 ## Дополнительные задания (со звездочкой*)
